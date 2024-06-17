@@ -24,8 +24,6 @@ Write a function that does steps 1 and 2 to select certain columns and convert t
 ed <- read_csv("Data/EDU01a.csv")
 ```
 
-
-
 ```{r function for steps 1 & 2}
 function_step_1_2 <- function(data, pivot = "enrollment") {
   return_1 <- 
@@ -63,3 +61,12 @@ data_step_3 |>
   select(county_index)
 ```
 
+# *Data Combining*
+
+# *Plot State Function*
+
+# *Plot County Function*
+
+# *EDU01 Dataset run*
+
+# *PST01 Dataset run*
