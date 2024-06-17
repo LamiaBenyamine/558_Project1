@@ -44,7 +44,24 @@ Write a function that takes in the previous function and converts the pivoted co
 ```
 
 # *Data Combining*
-
+This is all placeholding until first part is finished so I can see what I need to call.
+```{r}
+combo = function(data1, data2){
+  is_county_level1 = "county" %in% # class of data1
+  is_county_level2 = "county" %in% # class of data2
+  
+    if(is_county_level1 && is_county_level2){
+      combo_county = dplyr::bind_rows(data1, data2)
+      combo_non_county = tibble()
+    } else if(!is_county_level1 && !is_county_level2){
+      combo_non_county = dplyr::bind_rows(data1, data2)
+      combo_county = tibble()
+    } else{
+      stop("error")
+    }
+  return(list(county_data = combo_county, non_county_data = combo_non_county))
+}
+```
 # *Plot State Function*
 
 # *Plot County Function*
