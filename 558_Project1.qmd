@@ -16,6 +16,7 @@ library(readr)
 library(dplyr)
 library(tidyr)
 library(lubridate)
+library(ggplot2)
 ```
 
 Create a function to read in a csv from a url.
@@ -135,7 +136,6 @@ proccessing_wrapper <- function(url, pivot = "enrollment") {
     function_steps_4_5_6()
   return(result)
 }
-proccessing_wrapper("https://www4.stat.ncsu.edu/~online/datasets/EDU01a.csv")
 ```
 
 
@@ -165,10 +165,37 @@ combine_datasets = function(data1, data2){
   return(list(county_data = combo_county, non_county_data = combo_non_cty))
 }
 ```
-# *Plot State Function*
 
-# *Plot County Function*
+# *Generic Summarize Functions*
 
-# *EDU01 Dataset run*
+## Plot State Function
 
-# *PST01 Dataset run*
+Write a function that plots the mean value of the variable selected, across the years, and for each division. Also, removed observations at the ERROR setting of Division.
+
+```{r plot state data}
+plot.state <- function(data, var_name = "enrollment") {
+ plot_state_data <-
+   data |>
+   group_by(division, year) |>
+   filter(division != "ERROR") |>
+   mutate(mean = mean(get(var_name)))
+ 
+ #create a line plot
+ ggplot(data = plot_state_data, aes(x = year, y = mean, group = division)) +
+   geom_line(aes(color = division)) +
+   geom_point(aes(color = division)) +
+   ggtitle(cat(eval(var_name), "means plot by division"))
+}
+```
+
+## Plot County Function
+
+
+# *Putting it all together*
+
+## EDU01 Data set run
+
+## PST01 Dataset run
+
+
+
