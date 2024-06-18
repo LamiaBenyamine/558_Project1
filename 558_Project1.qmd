@@ -128,7 +128,7 @@ function_steps_4_5_6 <- function(data) {
 Create a wrapper function that takes in the URL of a .csv file format and the optional argument for the variable name, combines all the above functions and returns two tibbles.
 
 ```{r wrapper function}
-proccessing_wrapper <- function(url, pivot = "enrollment") {
+processing_wrapper <- function(url, pivot = "enrollment") {
   result <- 
     read_csv_code(url) |>
     function_step_1_2(pivot) |>
@@ -224,6 +224,13 @@ plot.county = function(data, var_name = "enrollment", state = "fix", top_bottom 
 # *Putting it all together*
 
 ## EDU01 Data set run
+```{r}
+urlEDU01A = "https://www4.stat.ncsu.edu/~online/datasets/EDU01a.csv"
+urlEDU01B = "https://www4.stat.ncsu.edu/~online/datasets/EDU01b.csv"
+
+A = processing_wrapper(urlEDU01A)
+B = processing_wrapper(urlEDU01B)
+```
 
 ## PST01 Dataset run
 
