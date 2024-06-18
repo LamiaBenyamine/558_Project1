@@ -140,7 +140,9 @@ proccessing_wrapper <- function(url, pivot = "enrollment") {
 
 
 # *Data Combining*
-This is all placeholding until first part is finished so I can see what I need to call.
+
+Combines two datasets and separates them by county and non-county data and returns a list of the two.
+
 ```{r}
 combine_datasets = function(data1, data2){
   # function for identifying county-level data
@@ -194,7 +196,28 @@ plot.state <- function(data, var_name = "enrollment") {
 ## Plot County Function
 ```{r}
 plot.county = function(data, var_name = "enrollment", state = "fix", top_bottom = "top", num_counties = 5){
+  # Filtering the data by state, need to fix
+  data_state = data |> filter(State == state)
   
+  # overall mean of the statistic
+  mean_value = data_state |>
+    group_by(area_name) |>
+    summarize(mean_stat = mean(get(var_name), na.rm = TRUE))
+  
+  # filtering the data based on top_bottom
+  if (top_bottom == "top"){
+    top_areas = mean_value |> arrange(desc(mean_stat)) |> slice_head(n = num_counties)
+  } else{
+    top_areas = mean_value |> arrange(mean_stat) |> slice_head(n = num_counties)
+  }
+  
+  data_filter = data_state |> filter(area_name %in% top_areas$area_name)
+  
+  # plotting
+  ggplot(data_filter, aes(x = year, y = get(var_name), color = area_name)) +
+    geom_line() + 
+    labs(title = paste("Statistic", var_name, "Across years by area_name"), x = "Year", y = var_name) + 
+    theme_minimal()
 }
 ```
 
