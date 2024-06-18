@@ -127,7 +127,9 @@ combine_datasets = function(data1, data2){
 # *Plot State Function*
 
 # *Plot County Function*
-
+```{r}
+plot.county = function(df, var_name = "enrollment")
+```
 # *EDU01 Dataset run*
 
 # *PST01 Dataset run*
