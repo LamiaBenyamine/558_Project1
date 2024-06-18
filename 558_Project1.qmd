@@ -175,7 +175,8 @@ plot.state <- function(data, var_name = "enrollment") {
  ggplot(data = plot_state_data, aes(x = year, y = mean, group = division)) +
    geom_line(aes(color = division)) +
    geom_point(aes(color = division)) +
-   ggtitle(cat(eval(var_name), "means plot by division"))
+   labs(title(paste(var_name, "means plot by division"), x = "Year", y = var_name))
+     ##cat(eval(var_name), "means plot by division"))
 }
 ```
 
@@ -214,7 +215,7 @@ plot.county = function(data, var_name = "enrollment", state = "fix", top_bottom 
 urlEDU01A = "https://www4.stat.ncsu.edu/~online/datasets/EDU01a.csv"
 urlEDU01B = "https://www4.stat.ncsu.edu/~online/datasets/EDU01b.csv"
 
-A = processing_wrapper(urlEDU01A)
+A <- processing_wrapper("https://www4.stat.ncsu.edu/~online/datasets/EDU01b.csv")
 B = processing_wrapper(urlEDU01B)
 
 EDU_AB = combine_datasets(A, B)
