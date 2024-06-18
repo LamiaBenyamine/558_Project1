@@ -150,7 +150,7 @@ combine_datasets = function(data1, data2){
   combo_county = dplyr::bind_rows(data1[[1]], data2[[1]])
   combo_non_cty = dplyr::bind_rows(data1[[2]], data2[[2]])
   
-  return(list(county_data = combo_county, non_county_data = combo_non_cty))
+  return(list(County_dat = combo_county, State_dat = combo_non_cty))
 }
 ```
 
@@ -182,9 +182,9 @@ plot.state <- function(data, var_name = "enrollment") {
 
 ## Plot County Function
 ```{r}
-plot.county = function(data, var_name = "enrollment", state = "fix", top_bottom = "top", num_counties = 5){
+plot.county = function(data, var_name = "enrollment", State = "AL", top_bottom = "top", num_counties = 5){
   # Filtering the data by state, need to fix
-  data_state = data |> filter(State == state)
+  data_state = data |> filter(state == State)
   
   # overall mean of the statistic
   mean_value = data_state |>
@@ -202,8 +202,9 @@ plot.county = function(data, var_name = "enrollment", state = "fix", top_bottom 
   
   # plotting
   ggplot(data_filter, aes(x = year, y = get(var_name), color = area_name)) +
-    geom_line() + 
-    labs(title = paste("Statistic", var_name, "Across years by area_name"), x = "Year", y = var_name) + 
+    geom_line() +
+    geom_point() + 
+    labs(title = paste("Statistic", var_name, "across years by county"), x = "Year", y = var_name) + 
     theme_minimal()
 }
 ```
@@ -215,14 +216,51 @@ plot.county = function(data, var_name = "enrollment", state = "fix", top_bottom 
 urlEDU01A = "https://www4.stat.ncsu.edu/~online/datasets/EDU01a.csv"
 urlEDU01B = "https://www4.stat.ncsu.edu/~online/datasets/EDU01b.csv"
 
-A <- processing_wrapper("https://www4.stat.ncsu.edu/~online/datasets/EDU01b.csv")
+A = processing_wrapper(urlEDU01A)
 B = processing_wrapper(urlEDU01B)
 
 EDU_AB = combine_datasets(A, B)
 EDU_AB
+
+plot.state(EDU_AB$State_dat)
+
+plot.county(EDU_AB$County_dat, State = "NC", top_bottom = "top", num_counties = 20)
+plot.county(EDU_AB$County_dat, State = "SC", top_bottom = "bottom", num_counties = 7)
+plot.county(EDU_AB$County_dat)
+plot.county(EDU_AB$County_dat, State = "PA", top_bottom = "top", num_counties = 8)
 ```
 
 ## PST01 Dataset run
+```{r}
+urlPST01A = "https://www4.stat.ncsu.edu/~online/datasets/PST01a.csv"
+urlPST01B = "https://www4.stat.ncsu.edu/~online/datasets/PST01b.csv"
+urlPST01C = "https://www4.stat.ncsu.edu/~online/datasets/PST01c.csv"
+urlPST01D = "https://www4.stat.ncsu.edu/~online/datasets/PST01d.csv"
+
+AA = processing_wrapper(urlPST01A)
+BB = processing_wrapper(urlPST01B)
+CC = processing_wrapper(urlPST01C)
+DD = processing_wrapper(urlPST01D)
+
+df_PA = combine_datasets(AA, BB)
+df_PB = combine_datasets(df_PA, CC)
+df_PST = combine_datasets(df_PB, DD)
+df_PST
+
+# df_PST final combo dataset
+
+plot.state(df_PST$State_dat)
+
+
+plot.county(df_PST$County_dat, State = "CA", top_bottom = "top", num_counties = 15)
+
+plot.county(df_PST$County_dat, State = "TX", top_bottom = "top", num_counties = 4)
+
+plot.county(df_PST$County_dat)
+
+plot.county(df_PST$County_dat, State = "NY", top_bottom = "top", num_counties = 10)
+
+```
 
 
 >>>>>>> 46f6eeb8b21ce89cf4aeb4b86702828f66641aba
