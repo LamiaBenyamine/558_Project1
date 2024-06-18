@@ -18,16 +18,20 @@ library(tidyr)
 library(lubridate)
 ```
 
-Write a function that does steps 1 and 2 to select certain columns and convert the data into long format so area_name only has one enrollment value.
-
-```{r}
-ed <- read_csv("Data/EDU01a.csv")
+Create a function to read in a csv from a url.
+```{r read csv}
+read_csv_code <- function(url) {
+  data = read_delim(url, delim = ",")
+  return(data)
+}
 ```
+
+Write a function that does steps 1 and 2 to select certain columns and convert the data into long format so area_name only has one enrollment value.
 
 ```{r function for steps 1 & 2}
 function_step_1_2 <- function(data, pivot = "enrollment") {
   return_1 <- 
-    data |>
+  data |>
   as_tibble() |>
   rename(area_name = Area_name) |>
   select(area_name, STCOU, ends_with("D")) |>
@@ -36,45 +40,28 @@ function_step_1_2 <- function(data, pivot = "enrollment") {
                values_to = pivot)
   return(return_1)
 }
-data_step_3 <- function_step_1_2(ed)
 ```
 
 Write a function that takes in the previous function and converts the pivoted column into a year and a measurement column.
 
 ```{r function for step 3}
 function_step_3 <- function(data) {
-  data$year <-year(parse_date_time(substr(data$attribute, 8,9), "y"))
-  data$measurement <-substr(data$attribute, 1,7)
+  return_2 <- 
+    data |>
+    mutate(year = year(parse_date_time(substr(data$attribute, 8,9), "y")),
+           measurement = substr(data$attribute, 1,7))
+  return(return_2)
 }
-function_step_3(data_step_3)
-```
-
-Step 4: Create two data sets: one for non-county and one for county level.
-
-```{r county and state data sets}
-#Find all the indices where the area name contains a county
-county_index <- grep(pattern = ", \\w\\w", data_step_3$area_name)
-
-#Create an index column
-data_step_3$index <- c(1:31980)
-
-#Subset the data into two tibbles
-county_tb <- data_step_3 |>
-  filter(index %in% county_index)
-
-state_tb <- data_step_3 |>
-  filter(! index %in% county_index)
-
-#Change the class of both tibbles
-class(county_tb) <- c("county", class(county_tb))
-class(state_tb) <- c("state", class(state_tb))
 ```
 
 Write a function for step 5, to create a new variable for state in the county tibble.
 
 ```{r function for step 5}
 function_step_5 <- function(data) {
-  county_tb$state <- substr(data$area_name, nchar(data$area_name)-1, nchar(data$area_name))
+  return_3 <-
+    data |>
+    mutate(state = substr(data$area_name, nchar(data$area_name)-1, nchar(data$area_name)))
+  return(return_3)
 }
 ```
 
@@ -82,21 +69,75 @@ Write a function for step 6, to create a new variable for division in non-county
 
 ```{r function for step 6}
 function_step_6 <- function(data) {
-  div1 <- c("Connecticut", "Maine", "Massachusetts", "New Hampshire", "Rhode Island", "Vermont")
-  div2 <- c("New Jersey", "New York", "Pennsylvania")
-  div3 <- c("Illinois", "Indiana", "Michigan", "Ohio", "Wisconsin")
-  div4 <- c("Iowa", "Kansas", "Minnesota", "Missouri", "Nebraska", "North Dakota", "South Dakota")
-  div5 <- c("Delaware", "Florida", "Georgia", "Maryland", "North Carolina", "South Carolina", "Virginia", "Washington", "D.C.", "West Virginia")
-  div6 <- c("Alabama", "Kentucky", "Mississippi", "Tennessee")
-  div7 <- c("Arkansas", "Louisiana", "Oklahoma", "Texas")
-  div8 <- c("Arizona", "Colorado", "Idaho", "Montana", "Nevada", "New Mexico", "Utah", "Wyoming")
-  div9 <- c("Alaska", "California", "Hawaii", "Oregon", "Washington")
-  data$division <- if_else(data$area_name %in% div1, "New England", 
-                           if_else(data$area_name %in% div2, "Middle Atlantic", "else"))
-  return(data)
+  #Create vectors to assign the states based on the Census designated divisions
+  div1 <- c("CONNECTICUT", "MAINE", "MASSACHUSETTS", "NEW HAMPSHIRE", "RHODE ISLAND", "VERMONT")
+  div2 <- c("NEW JERSEY", "NEW YORK", "PENNSYLVANIA")
+  div3 <- c("ILLINOIS", "INDIANA", "MICHIGAN", "OHIO", "WISCONSIN")
+  div4 <- c("IOWA", "KANSAS", "MINNESOTA", "MISSOURI", "NEBRASKA", "NORTH DAKOTA", "SOUTH DAKOTA")
+  div5 <- c("DELAWARE", "FLORIDA", "GEORGIA", "MARYLAND", "NORTH CAROLINA", "SOUTH CAROLINA", "VIRGINIA", "WASHINGTON", "DISTRICT OF COLUMBIA", "District of Columbia", "WEST VIRGINIA")
+  div6 <- c("ALABAMA", "KENTUCKY", "MISSISSIPPI", "TENNESSEE")
+  div7 <- c("ARKANSAS", "LOUISIANA", "OKLAHOMA", "TEXAS")
+  div8 <- c("ARIZONA", "COLORADO", "IDAHO", "MONTANA", "NEVADA", "NEW MEXICO", "UTAH", "WYOMING")
+  div9 <- c("ALASKA", "CALIFORNIA", "HAWAII", "OREGON", "WASHINGTON")
+
+  #Use conditions to assign the division name
+  return_4 <- 
+    data |>
+    mutate(division = if_else(data$area_name %in% div1, "New England", 
+                           if_else(data$area_name %in% div2, "Middle Atlantic", if_else(data$area_name %in% div3, "East North Central", if_else(data$area_name %in% div4, "West North Central", if_else(data$area_name %in% div5, "South Atlantic", if_else(data$area_name %in% div6, "East South Central", if_else(data$area_name %in% div7, "West South Central", if_else(data$area_name %in% div8, "Mountain", if_else(data$area_name %in% div9, "Pacific", "ERROR" ))))))))))
+  return(return_4)
 }
-function_step_6(state_tb)
 ```
+
+Write another function that takes in the output from step 3 and creates the two tibbles in step 4, calls the above two functions (to perform steps 5 and 6), and returns two final tibbles.
+
+```{r function for steps 4, 5, and 6}
+function_steps_4_5_6 <- function(data) {
+  #Step 4
+  #Find all the indices where the area name contains a county
+  county_index <- grep(pattern = ", \\w\\w", data$area_name)
+  
+  #Create an index column
+  data$index <- c(1:nrow(data))
+  
+  #Subset the data into two tibbles
+  county_tb <- data |>
+    filter(index %in% county_index) |>
+    select(-index)
+  
+  state_tb <- data |>
+    filter(! index %in% county_index) |>
+    select(-index)
+  
+  #Change the class of both tibbles
+  class(county_tb) <- c("county", class(county_tb))
+  class(state_tb) <- c("state", class(state_tb))
+  
+  #Step 5 function
+  county_tb <- function_step_5(county_tb)
+  
+  #Step 6 function
+  state_tb <- function_step_6(state_tb)
+  
+  return_list <- list(county_tb, state_tb)
+ return(return_list)
+}
+```
+
+Create a wrapper function that takes in the URL of a .csv file format and the optional argument for the variable name, combines all the above functions and returns two tibbles.
+
+```{r wrapper function}
+proccessing_wrapper <- function(url, pivot = "enrollment") {
+  result <- 
+    read_csv_code(url) |>
+    function_step_1_2(pivot) |>
+    function_step_3() |>
+    function_steps_4_5_6()
+  return(result)
+}
+proccessing_wrapper("https://www4.stat.ncsu.edu/~online/datasets/EDU01a.csv")
+```
+
 
 # *Data Combining*
 This is all placeholding until first part is finished so I can see what I need to call.
