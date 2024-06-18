@@ -145,24 +145,10 @@ Combines two datasets and separates them by county and non-county data and retur
 
 ```{r}
 combine_datasets = function(data1, data2){
-  # function for identifying county-level data
-  is_county_level = function(data){
-    if ("STCOU" %in% colnames(data)){
-    return(!grepl("000$", data$STCOU))
-  }
-  return(FALSE)
-  }
-  
-  # separating data by county/non-county for both datasets
-  county_data1 = data1 |> filter(is_county_level(data1))
-  non_cty_data1 = data1 |> filter(!is_county_level(data1))
-  
-  county_data2 = data2 |> filter(is_county_level(data2))
-  non_cty_data2 = data2 |> filter(!is_county_level(data2))
   
   # combine data
-  combo_county = dplyr::bind_rows(county_data1, county_data2)
-  combo_non_cty = dplyr::bind_rows(non_cty_data1, non_cty_data2)
+  combo_county = dplyr::bind_rows(data1[[1]], data2[[1]])
+  combo_non_cty = dplyr::bind_rows(data1[[2]], data2[[2]])
   
   return(list(county_data = combo_county, non_county_data = combo_non_cty))
 }
@@ -230,6 +216,9 @@ urlEDU01B = "https://www4.stat.ncsu.edu/~online/datasets/EDU01b.csv"
 
 A = processing_wrapper(urlEDU01A)
 B = processing_wrapper(urlEDU01B)
+
+EDU_AB = combine_datasets(A, B)
+EDU_AB
 ```
 
 ## PST01 Dataset run
