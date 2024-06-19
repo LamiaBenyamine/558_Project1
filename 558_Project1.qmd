@@ -1,10 +1,10 @@
 ---
-title: "ST558_Project 1"
+title: "ST558: Project 1"
 authors: "Lamia Benyaine & Scott Van Slyck"
-description: "Write functions to manipulate a process data sets"
+description: "Write functions to manipulate and process data sets"
 date: "June 18, 2024"
 format: html
-editor: visual
+editor: visual 
 ---
 
 # *Data Processing*
@@ -20,6 +20,7 @@ library(ggplot2)
 ```
 
 Create a function to read in a csv from a url.
+
 ```{r read csv}
 read_csv_code <- function(url) {
   data = read_delim(url, delim = ",")
@@ -125,7 +126,7 @@ function_steps_4_5_6 <- function(data) {
 }
 ```
 
-Create a wrapper function that takes in the URL of a .csv file format and the optional argument for the variable name, combines all the above functions and returns two tibbles.
+Create a wrapper function that takes in the URL of a .csv file format and the optional argument for the variable name, combines all the above functions and returns a list of two tibbles.
 
 ```{r wrapper function}
 processing_wrapper <- function(url, pivot = "enrollment") {
@@ -138,15 +139,13 @@ processing_wrapper <- function(url, pivot = "enrollment") {
 }
 ```
 
-
 # *Data Combining*
 
-Combines two datasets and separates them by county and non-county data and returns a list of the two.
+Combines two data sets and separates them by county and non-county data and returns a list of the two.
 
 ```{r}
 combine_datasets = function(data1, data2){
-  
-  # combine data
+  #combine data
   combo_county = dplyr::bind_rows(data1[[1]], data2[[1]])
   combo_non_cty = dplyr::bind_rows(data1[[2]], data2[[2]])
   
@@ -154,9 +153,6 @@ combine_datasets = function(data1, data2){
 }
 ```
 
-<<<<<<< HEAD
-# *EDU01 Dataset run*
-=======
 # *Generic Summarize Functions*
 
 ## Plot State Function
@@ -175,16 +171,20 @@ plot.state <- function(data, var_name = "enrollment") {
  ggplot(data = plot_state_data, aes(x = year, y = mean, group = division)) +
    geom_line(aes(color = division)) +
    geom_point(aes(color = division)) +
-   labs(title(paste(var_name, "means plot by division"), x = "Year", y = var_name))
-     ##cat(eval(var_name), "means plot by division"))
+   labs(title = (paste(var_name, "means across years by division")), y = paste("mean", var_name)) +
+   theme_minimal()
 }
 ```
 
 ## Plot County Function
-```{r}
+
+Write a function that allows the user to specify the state of interest, determine the 'top' or 'bottom' most of counties to view, and instruct how many of the 'top' or 'bottom' will be investigated.
+
+```{r plot county data}
 plot.county = function(data, var_name = "enrollment", State = "AL", top_bottom = "top", num_counties = 5){
   # Filtering the data by state, need to fix
-  data_state = data |> filter(state == State)
+  data_state = data |> 
+    filter(state == State)
   
   # overall mean of the statistic
   mean_value = data_state |>
@@ -193,18 +193,23 @@ plot.county = function(data, var_name = "enrollment", State = "AL", top_bottom =
   
   # filtering the data based on top_bottom
   if (top_bottom == "top"){
-    top_areas = mean_value |> arrange(desc(mean_stat)) |> slice_head(n = num_counties)
+    top_areas = mean_value |> 
+      arrange(desc(mean_stat)) |> 
+      slice_head(n = num_counties)
   } else{
-    top_areas = mean_value |> arrange(mean_stat) |> slice_head(n = num_counties)
+    top_areas = mean_value |> 
+      arrange(mean_stat) |> 
+      slice_head(n = num_counties)
   }
   
-  data_filter = data_state |> filter(area_name %in% top_areas$area_name)
+  data_filter = data_state |> 
+    filter(area_name %in% top_areas$area_name)
   
   # plotting
   ggplot(data_filter, aes(x = year, y = get(var_name), color = area_name)) +
     geom_line() +
     geom_point() + 
-    labs(title = paste("Statistic", var_name, "across years by county"), x = "Year", y = var_name) + 
+    labs(title = paste(top_bottom, num_counties, "mean", var_name, "across years by county"), x = "year", y = paste("mean", var_name), color = "county, state") + 
     theme_minimal()
 }
 ```
@@ -212,56 +217,59 @@ plot.county = function(data, var_name = "enrollment", State = "AL", top_bottom =
 # *Putting it all together*
 
 ## EDU01 Data set run
-```{r}
+
+The ED01 data contains the values for public school enrollment.
+
+```{r ED01 run}
 urlEDU01A = "https://www4.stat.ncsu.edu/~online/datasets/EDU01a.csv"
 urlEDU01B = "https://www4.stat.ncsu.edu/~online/datasets/EDU01b.csv"
 
+# Run your data processing function on the two enrollment URLs
 A = processing_wrapper(urlEDU01A)
 B = processing_wrapper(urlEDU01B)
 
-EDU_AB = combine_datasets(A, B)
-EDU_AB
+# Run your data combining function to put these into one object (with two data frames)
+df_EDU = combine_datasets(A, B)
+df_EDU
 
-plot.state(EDU_AB$State_dat)
+# Use the plot function on the state data frame
+plot.state(df_EDU$State_dat)
 
-plot.county(EDU_AB$County_dat, State = "NC", top_bottom = "top", num_counties = 20)
-plot.county(EDU_AB$County_dat, State = "SC", top_bottom = "bottom", num_counties = 7)
-plot.county(EDU_AB$County_dat)
-plot.county(EDU_AB$County_dat, State = "PA", top_bottom = "top", num_counties = 8)
+# Use the plot function on the county data frame
+plot.county(df_EDU$County_dat, State = "NC", top_bottom = "top", num_counties = 20)
+plot.county(df_EDU$County_dat, State = "SC", top_bottom = "bottom", num_counties = 7)
+plot.county(df_EDU$County_dat)
+plot.county(df_EDU$County_dat, State = "PA", top_bottom = "top", num_counties = 8)
 ```
 
-## PST01 Dataset run
-```{r}
+## PST01 Data set run
+
+The PST01 data contains values for resident total population.
+
+```{r PST01 run}
 urlPST01A = "https://www4.stat.ncsu.edu/~online/datasets/PST01a.csv"
 urlPST01B = "https://www4.stat.ncsu.edu/~online/datasets/PST01b.csv"
 urlPST01C = "https://www4.stat.ncsu.edu/~online/datasets/PST01c.csv"
 urlPST01D = "https://www4.stat.ncsu.edu/~online/datasets/PST01d.csv"
 
-AA = processing_wrapper(urlPST01A)
-BB = processing_wrapper(urlPST01B)
-CC = processing_wrapper(urlPST01C)
-DD = processing_wrapper(urlPST01D)
+# Run your data processing function on the four data sets at URLs
+AA = processing_wrapper(urlPST01A, pivot = "population")
+BB = processing_wrapper(urlPST01B, pivot = "population")
+CC = processing_wrapper(urlPST01C, pivot = "population")
+DD = processing_wrapper(urlPST01D, pivot = "population")
 
+# Run your data combining function to put these into one object
 df_PA = combine_datasets(AA, BB)
 df_PB = combine_datasets(df_PA, CC)
 df_PST = combine_datasets(df_PB, DD)
-df_PST
+df_PST 
 
-# df_PST final combo dataset
+# Use the plot function on the state data frame
+plot.state(df_PST$State_dat, var_name = "population")
 
-plot.state(df_PST$State_dat)
-
-
-plot.county(df_PST$County_dat, State = "CA", top_bottom = "top", num_counties = 15)
-
-plot.county(df_PST$County_dat, State = "TX", top_bottom = "top", num_counties = 4)
-
-plot.county(df_PST$County_dat)
-
-plot.county(df_PST$County_dat, State = "NY", top_bottom = "top", num_counties = 10)
-
+# Use the plot function on the county data frame
+plot.county(df_PST$County_dat, var_name = "population", State = "CA", top_bottom = "top", num_counties = 15)
+plot.county(df_PST$County_dat, var_name = "population", State = "TX", top_bottom = "top", num_counties = 4)
+plot.county(df_PST$County_dat, var_name = "population")
+plot.county(df_PST$County_dat, var_name = "population", State = "NY", top_bottom = "top", num_counties = 10)
 ```
-
-
->>>>>>> 46f6eeb8b21ce89cf4aeb4b86702828f66641aba
-
